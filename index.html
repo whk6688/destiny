@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>玄机算命</title>
+  <style>
+    /* 现代CSS重置 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 装饰光球动画 */
+    .blob {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      position: absolute;
+      filter: blur(60px);
+      opacity: 0.2;
+      animation: float 10s infinite;
+    }
+
+    .blob:nth-child(1) {
+      background: #ff6ec4;
+      top: -50px;
+      left: -50px;
+      animation-delay: 0s;
+    }
+
+    .blob:nth-child(2) {
+      background: #42e6ff;
+      bottom: -50px;
+      right: -50px;
+      animation-delay: 3s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(20px, -20px) scale(1.1); }
+    }
+
+    /* 卡片容器 */
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .title {
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .title::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(45deg, #ff6ec4, #42e6ff);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .result {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-line;
+      min-height: 100px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .loading::after {
+      content: '●●●';
+      animation: loadingDots 1.5s infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes loadingDots {
+      0% { content: '●'; }
+      33% { content: '●●'; }
+      66% { content: '●●●'; }
+      100% { content: '●'; }
+    }
+
+    .error {
+      color: #ff6b6b;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- 装饰光球 -->
+  <div class="blob"></div>
+  <div class="blob"></div>
+
+  <!-- 主要内容 -->
+  <div class="card">
+    <h1 class="title">🔮 玄机算命</h1>
+    
+    <div class="input-group">
+      <label for="birthday">请输入出生日期（YYYY-MM-DD）</label>
+      <input type="date" id="birthday" required>
+    </div>
+
+    <button class="btn" id="calculateBtn">✨ 开始算命</button>
+
+    <div class="result" id="fortuneResult">
+      命运之轮即将转动...
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    const calculateBtn = document.getElementById('calculateBtn');
+    const birthdayInput = document.getElementById('birthday');
+    const fortuneResult = document.getElementById('fortuneResult');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // 模拟大模型API调用
+    function mockAIAPI(birthday) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() < 0.9) { // 90%的成功率
+            resolve(`根据您 ${birthday} 的命格：
+            
+【事业运势】 
+贵人运旺盛，适合拓展新领域
+有重大决策机遇，但需谨慎评估
+
+【感情运势】 
+单身者：桃花盛开，注意选择良人
+有伴侣：关系升温，适合规划未来
+
+【健康提示】
+注意调节作息，避免过度劳累
+建议每周至少锻炼3次`);
+          } else {
+            reject('网络波动，请稍后再试...');
+          }
+        }, 2000); // 模拟网络延迟
+      });
+    }
+
+    calculateBtn.addEventListener('click', async () => {
+      const birthday = birthdayInput.value;
+      
+      if (!birthday) {
+        errorMsg.textContent = '请选择出生日期';
+        return;
+      }
+
+      errorMsg.textContent = '';
+      fortuneResult.textContent = '测算中...';
+      calculateBtn.classList.add('loading');
+      calculateBtn.disabled = true;
+
+      try {
+        const result = await mockAIAPI(birthday);
+        fortuneResult.textContent = result;
+      } catch (error) {
+        fortuneResult.textContent = '命盘不稳定...';
+        errorMsg.textContent = error;
+      } finally {
+        calculateBtn.classList.remove('loading');
+        calculateBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
